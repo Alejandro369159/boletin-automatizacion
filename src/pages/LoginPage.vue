@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import router from '@/router'
 import { ref } from 'vue'
 
 const email = ref('')
@@ -6,6 +7,7 @@ const password = ref('')
 
 function login() {
   try {
+    router.push('/correos')
     // Login function
   } catch (e) {
     console.error(e)

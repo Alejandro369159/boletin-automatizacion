@@ -37,6 +37,7 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
       </div>
 
       <button
+        @click="$router.push('/login')"
         type="button"
         class="bg-red-600 text-white px-6 py-2 block mx-auto mb-6 cursor-pointer hover:bg-red-700"
       >
