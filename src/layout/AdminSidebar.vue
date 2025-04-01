@@ -22,7 +22,9 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
     <nav class="h-[100dvh] bg-blue-800 w-1/6 shadow-xl flex flex-col justify-between">
       <div>
         <div class="text-white font-semibold text-center pt-4 mb-8">
-          <p class="text-lg">Nombre del administrador</p>
+          <img src="@/assets/images/logo.png" alt="logo" class="h-9 invert mx-auto" />
+          <hr class="border-2 mt-4" />
+          <p class="text-lg mt-3">Nombre del administrador</p>
           <p>Nombre del negocio</p>
         </div>
 
