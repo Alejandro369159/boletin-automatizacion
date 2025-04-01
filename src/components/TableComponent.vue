@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { Column, DataItem } from '@/types/Table'
+import type { Button, Column, DataItem } from '@/types/Table'
 import { defineProps, defineEmits, computed, ref } from 'vue'
 
 const props = defineProps<{
   columns: Column[]
   data: DataItem[]
+  buttons?: Button[]
   rowsPerPage?: number
 }>()
 
@@ -47,13 +48,22 @@ const nextPage = () => {
 
 <template>
   <div>
-    <!-- Buscador -->
-    <input
-      v-model="searchQuery"
-      type="text"
-      placeholder="Buscar..."
-      class="w-1/3 p-2 mb-2 border border-gray-300 rounded float-end"
-    />
+    <div class="flex justify-end items-center mb-2 gap-2">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Buscar..."
+        class="w-1/3 p-2 border border-gray-300 rounded float-end"
+      />
+      <button
+        v-for="button in props.buttons"
+        :key="button.label"
+        @click="button.action"
+        class="p-2 bg-blue-500 text-white rounded mr-2 disabled:opacity-50 cursor-pointer hover:bg-blue-600 px-4"
+      >
+        {{ button.label }}
+      </button>
+    </div>
 
     <table class="w-full border border-gray-300">
       <thead>

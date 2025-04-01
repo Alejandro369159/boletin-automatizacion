@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '../pages/LoginPage.vue'
 import AdminSidebar from '@/layout/AdminSidebar.vue'
 import SubscribersPage from '@/pages/SubscribersPage.vue'
+import SubscriberDetailPage from '@/pages/SubscriberDetailPage.vue'
+import CreateSuscriber from '@/pages/CreateSuscriber.vue'
 import EmailsPage from '@/pages/EmailsPage.vue'
 
 const router = createRouter({
@@ -29,7 +31,12 @@ const router = createRouter({
         {
           path: 'suscriptores/:id',
           name: 'subscriber',
-          component: SubscribersPage,
+          component: SubscriberDetailPage,
+        },
+        {
+          path: 'suscriptores/nuevo',
+          name: 'create-subscriber',
+          component: CreateSuscriber,
         },
         {
           path: 'correos',

@@ -24,8 +24,8 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
         <div class="text-white font-semibold text-center pt-4 mb-8">
           <img src="@/assets/images/logo.png" alt="logo" class="h-9 invert mx-auto" />
           <hr class="border-2 mt-4" />
-          <p class="text-lg mt-3">Nombre del administrador</p>
-          <p>Nombre del negocio</p>
+          <p class="text-lg mt-3">Mario A. Martínez</p>
+          <p>Boletín de Correos</p>
         </div>
 
         <div

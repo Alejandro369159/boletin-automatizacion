@@ -6,3 +6,8 @@ export type Column = {
 type PossibleValue = number | string | null | undefined | number[] | string[]
 
 export type DataItem = Record<string, PossibleValue>
+
+export type Button = {
+  label: string
+  action: () => void
+}
