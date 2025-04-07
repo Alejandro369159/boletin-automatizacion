@@ -28,14 +28,15 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
           <p>Boletín de Correos</p>
         </div>
 
-        <div
+        <RouterLink
           v-for="route in routes"
           :key="route.path"
-          class="flex items-center gap-3 text-white font-medium ml-4 mb-3 hover:ml-7 transition-normal duration-100"
+          :to="route.path"
+          class="hover:ml-7 transition-normal duration-100 flex items-center gap-3 text-white font-medium ml-4 mb-3"
         >
           <component :is="route.icon" class="w-5 h-5" />
-          <RouterLink :to="route.path" class="block">{{ route.label }}</RouterLink>
-        </div>
+          <p>{{ route.label }}</p>
+        </RouterLink>
       </div>
 
       <button
