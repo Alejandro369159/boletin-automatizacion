@@ -3,7 +3,7 @@ export type Column = {
   label: string
 }
 
-type PossibleValue = number | string | null | undefined | number[] | string[]
+type PossibleValue = number | string | null | undefined | number[] | string[] | Date
 
 export type DataItem = Record<string, PossibleValue>
 

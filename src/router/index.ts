@@ -5,6 +5,8 @@ import SubscribersPage from '@/pages/SubscribersPage.vue'
 import SubscriberDetailPage from '@/pages/SubscriberDetailPage.vue'
 import CreateSuscriber from '@/pages/CreateSuscriber.vue'
 import EmailsPage from '@/pages/EmailsPage.vue'
+import CreateEmail from '@/pages/CreateEmail.vue'
+import EmailDetailPage from '@/pages/EmailDetailPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,9 +46,14 @@ const router = createRouter({
           component: EmailsPage,
         },
         {
+          path: 'correos/nuevo',
+          name: 'new-email',
+          component: CreateEmail,
+        },
+        {
           path: 'correos/:id',
           name: 'email',
-          component: EmailsPage,
+          component: EmailDetailPage,
         },
       ],
     },
