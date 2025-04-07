@@ -3,6 +3,8 @@ import { ref, computed, watch } from 'vue'
 import type { Email } from '@/types/Email'
 import router from '@/router'
 import { weekDays, type WeekDay } from '@/types/Time'
+import { storage } from '@/services/firebase' // ajusta según tu ruta
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 type NewEmail = Omit<Email, 'id'>
 
@@ -19,6 +21,8 @@ const form = ref<Omit<NewEmail, 'createdAt'>>({
   addresseeEmails: null,
   addresseePercent: null,
 })
+
+const selectedFiles = ref<FileList | null>(null)
 
 const filesInput = ref('')
 const emailsInput = ref('')
@@ -43,6 +47,10 @@ watch(emailsInput, (val) => {
     .filter(Boolean)
 })
 
+function setSelectedFiles(e: Event) {
+  selectedFiles.value = (e.target as HTMLInputElement).files
+}
+
 function toggleDay(day: WeekDay) {
   if (form.value.mode !== 'some-days') return
   if (form.value.days === null) form.value.days = []
@@ -55,11 +63,29 @@ function toggleDay(day: WeekDay) {
   console.log(form.value.days)
 }
 
-function handleSubmit() {
+async function handleFilesUpload() {
+  if (!selectedFiles.value) return
+
+  const uploadedFileURLs: string[] = []
+
+  for (let i = 0; i < selectedFiles.value.length; i++) {
+    const file = selectedFiles.value[i]
+    const fileRef = storageRef(storage, `emails/${Date.now()}_${file.name}`)
+    const snapshot = await uploadBytes(fileRef, file)
+    const url = await getDownloadURL(snapshot.ref)
+    uploadedFileURLs.push(url)
+  }
+
+  form.value.filesIds = uploadedFileURLs
+  console.log('Archivos subidos:', uploadedFileURLs)
+}
+
+async function handleSubmit() {
   const newEmail: NewEmail = {
     ...form.value,
     createdAt: new Date(),
   }
+  await handleFilesUpload()
   console.log('Email creado:', newEmail)
 }
 </script>
@@ -110,8 +136,9 @@ function handleSubmit() {
         <input
           id="files"
           type="file"
+          multiple
           class="px-3 py-1 bg-white rounded-sm border border-gray-700 w-2/3"
-          placeholder="file_001, file_002"
+          @change="(e) => setSelectedFiles(e)"
         />
       </div>
 
