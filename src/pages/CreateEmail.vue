@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { Email, WeekDay } from '@/types/Email'
+import type { Email } from '@/types/Email'
+import router from '@/router'
+import { weekDays, type WeekDay } from '@/types/Time'
 
-const form = ref<Omit<Email, 'id' | 'createdAt'>>({
+type NewEmail = Omit<Email, 'id'>
+
+const form = ref<Omit<NewEmail, 'createdAt'>>({
   title: '',
   subject: '',
   body: '',
@@ -11,21 +15,10 @@ const form = ref<Omit<Email, 'id' | 'createdAt'>>({
   days: null,
   sendingDay: null,
   sendingHour: '08:00',
-  sequenceTo: null,
   addresseeMode: 'all',
   addresseeEmails: null,
   addresseePercent: null,
 })
-
-const weekDays: WeekDay[] = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-]
 
 const filesInput = ref('')
 const emailsInput = ref('')
@@ -63,18 +56,16 @@ function toggleDay(day: WeekDay) {
 }
 
 function handleSubmit() {
-  const newEmail: Email = {
+  const newEmail: NewEmail = {
     ...form.value,
-    id: crypto.randomUUID(),
     createdAt: new Date(),
   }
-
   console.log('Email creado:', newEmail)
-  // Aquí podrías emitirlo, guardarlo en un store, enviarlo a backend, etc.
 }
 </script>
 
 <template>
+  <h3 class="mt-5 ml-5 font-medium text-2xl">Crear Email Programado</h3>
   <form @submit.prevent="handleSubmit" class="p-4 max-w-3xl">
     <div class="grid grid-cols-2 gap-4">
       <!-- Título -->
@@ -136,7 +127,6 @@ function handleSubmit() {
           <option value="unique">Único</option>
           <option value="some-days">Algunos días</option>
           <option value="daily">Diario</option>
-          <option value="sequence">Secuencia</option>
         </select>
       </div>
 
@@ -184,17 +174,6 @@ function handleSubmit() {
         />
       </div>
 
-      <!-- sequenceTo (solo si sequence) -->
-      <div v-if="form.mode === 'sequence'">
-        <label class="block" for="sequenceTo">ID de correo anterior en la secuencia</label>
-        <input
-          id="sequenceTo"
-          v-model="form.sequenceTo"
-          type="text"
-          class="px-3 py-1 bg-white rounded-sm border border-gray-700 w-full"
-        />
-      </div>
-
       <!-- Destinatarios -->
       <div>
         <label class="block" for="addresseeMode">Modo de destinatarios</label>
@@ -236,8 +215,20 @@ function handleSubmit() {
       </div>
     </div>
     <!-- Botón -->
-    <button type="submit" class="bg-green-600 px-4 py-1 text-white font-medium mt-4 cursor-pointer">
-      Crear correo
-    </button>
+    <div class="space-x-3">
+      <button
+        type="submit"
+        class="bg-green-600 px-4 py-1 text-white font-medium mt-4 cursor-pointer"
+      >
+        Crear correo
+      </button>
+      <button
+        @click="router.back()"
+        type="button"
+        class="bg-gray-300 px-4 py-1 font-medium mt-4 cursor-pointer"
+      >
+        Cancelar
+      </button>
+    </div>
   </form>
 </template>
