@@ -1,15 +1,21 @@
 import { db } from '@/services/firebase'
-import { emailsFromFirestore, type Email, type NewEmail } from '@/types/Email'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { emailFromFirestore, type Email, type NewEmail } from '@/types/Email'
+import { addDoc, collection, doc, getDoc, getDocs } from 'firebase/firestore'
 
 export class EmailsRepository {
-  public async get(): Promise<Email[]> {
-    const ref = collection(db, '')
+  public async list(): Promise<Email[]> {
+    const ref = collection(db, 'emails')
     const emails = await getDocs(ref)
-    return emails.docs.map(emailsFromFirestore)
+    return emails.docs.map(emailFromFirestore)
   }
 
-  public async create(email: NewEmail) {
+  public async get(docId: string): Promise<Email | null> {
+    const docRef = doc(db, 'emails', docId)
+    const email = await getDoc(docRef)
+    return email.exists() ? emailFromFirestore(email) : null
+  }
+
+  public async create(email: NewEmail): Promise<void> {
     await addDoc(collection(db, 'emails'), email)
   }
 }
