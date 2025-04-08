@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { Email } from '@/types/Email'
+import type { NewEmail } from '@/types/Email'
 import router from '@/router'
 import { weekDays, type WeekDay } from '@/types/Time'
 import { storage } from '@/services/firebase' // ajusta según tu ruta
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { EmailsRepository } from '@/repositories/EmailsRepository'
 
-type NewEmail = Omit<Email, 'id'>
+const emailsRepository = new EmailsRepository()
 
 const form = ref<Omit<NewEmail, 'createdAt'>>({
   title: '',
@@ -23,6 +24,9 @@ const form = ref<Omit<NewEmail, 'createdAt'>>({
 })
 
 const selectedFiles = ref<FileList | null>(null)
+
+const errorMessage = ref<string | null>(null)
+const isLoading = ref(false)
 
 const filesInput = ref('')
 const emailsInput = ref('')
@@ -77,22 +81,43 @@ async function handleFilesUpload() {
   }
 
   form.value.filesIds = uploadedFileURLs
-  console.log('Archivos subidos:', uploadedFileURLs)
 }
 
 async function handleSubmit() {
-  const newEmail: NewEmail = {
-    ...form.value,
-    createdAt: new Date(),
+  try {
+    isLoading.value = true
+    await handleFilesUpload()
+    const newEmail: NewEmail = {
+      ...form.value,
+      sendingDay: form.value.mode === 'unique' ? new Date(sendingDayString.value) : null,
+      days: form.value.mode === 'unique' ? null : form.value.days,
+      addresseeEmails: form.value.addresseeMode !== 'some' ? null : form.value.addresseeEmails,
+      addresseePercent: form.value.addresseeMode !== 'percent' ? null : form.value.addresseePercent,
+      createdAt: new Date(),
+    }
+    await emailsRepository.create(newEmail)
+    isLoading.value = false
+    router.push('/correos')
+  } catch (e) {
+    const error = e as Error
+    errorMessage.value = error.message
+    isLoading.value = false
   }
-  await handleFilesUpload()
-  console.log('Email creado:', newEmail)
 }
 </script>
 
 <template>
   <h3 class="mt-5 ml-5 font-medium text-2xl">Crear Email Programado</h3>
-  <form @submit.prevent="handleSubmit" class="p-4 max-w-3xl">
+  <div
+    v-if="errorMessage"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+    role="alert"
+  >
+    <strong class="font-bold">Error!</strong>
+    <span class="block sm:inline">{{ errorMessage }}</span>
+  </div>
+  <div v-else-if="isLoading" class="text-xl">Loading...</div>
+  <form v-else @submit.prevent="handleSubmit" class="p-4 max-w-3xl">
     <div class="grid grid-cols-2 gap-4">
       <!-- Título -->
       <div class="col-span-2">

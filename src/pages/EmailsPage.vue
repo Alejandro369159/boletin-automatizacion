@@ -2,7 +2,9 @@
 import { mockEmails } from '@/assets/mockEmails'
 import TableComponent from '@/components/TableComponent.vue'
 import router from '@/router'
+import type { Email } from '@/types/Email'
 import type { Column, DataItem } from '@/types/Table'
+import { onMounted, ref } from 'vue'
 
 const columns: Column[] = [
   {
@@ -19,10 +21,18 @@ const columns: Column[] = [
   },
 ]
 
+const emails = ref<Email[]>([])
+
 function viewDetail(item: DataItem) {
   const itemId = item.id ?? null
   if (itemId && typeof itemId === 'string') router.push(`/correos/${itemId}`)
 }
+
+onMounted(() => {
+  try {
+    // Get emails
+  } catch (error) {}
+})
 </script>
 
 <template>
@@ -30,7 +40,7 @@ function viewDetail(item: DataItem) {
   <div class="px-8 mt-6">
     <TableComponent
       :columns
-      :data="mockEmails"
+      :data="emails"
       :rows-per-page="10"
       @row-click="viewDetail"
       :buttons="[

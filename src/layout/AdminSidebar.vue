@@ -47,7 +47,7 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
         Cerrar Sesión
       </button>
     </nav>
-    <section class="w-5/6">
+    <section class="w-5/6 max-h-[100dvh] overflow-auto pb-10">
       <RouterView />
     </section>
   </main>
