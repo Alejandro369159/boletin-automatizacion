@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import suscribers from '@/assets/suscribers.js'
 import type { DataItem } from '@/types/Table'
+import SubscribersRepository from '@/repositories/SubscribersRepository'
 
 const route = useRoute()
 const subscriberId = ref<string | null>(null)
@@ -10,22 +10,16 @@ const subscriber = ref<DataItem | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const showConfirmation = ref(false)
+const successMessage = ref<string | null>(null)
 
-onMounted(() => {
+onMounted(async () => {
   subscriberId.value = route.params.id as string | null
   if (subscriberId.value) {
     loading.value = true
     error.value = null
     try {
-      const foundSubscriber = suscribers.find((sub) => sub.id === subscriberId.value) as
-        | DataItem
-        | undefined
-      if (foundSubscriber) {
-        subscriber.value = foundSubscriber
-      } else {
-        error.value = 'Suscriptor no encontrado.'
-      }
-    } catch (err: any) {
+      subscriber.value = await SubscribersRepository.show(subscriberId.value)
+    } catch (err: unknown) {
       console.error('Error al obtener los detalles del suscriptor:', err)
       error.value = 'No se pudieron cargar los detalles del suscriptor.'
     } finally {
@@ -40,15 +34,11 @@ const unsubscribe = () => {
   showConfirmation.value = true
 }
 
-const confirmUnsubscribe = () => {
+const confirmUnsubscribe = async () => {
   if (subscriber.value && subscriber.value.id) {
-    const index = suscribers.findIndex((sub) => sub.id === subscriber.value.id)
-    if (index !== -1) {
-      suscribers.splice(index, 1)
-      console.log(`Suscriptor con ID ${subscriber.value.id} anulado.`)
-      $router.push('/suscriptores')
-    }
+    await SubscribersRepository.delete(subscriberId.value!)
   }
+  successMessage.value = `Suscripción de ${subscriber.value?.name} anulada correctamente.`
   showConfirmation.value = false
 }
 
@@ -62,6 +52,14 @@ const cancelUnsubscribe = () => {
   <div v-else-if="error" class="text-center mt-12 text-red-500">{{ error }}</div>
   <div v-else-if="subscriber" class="px-8 mt-6">
     <h3 class="text-2xl mb-4">Detalles del Suscriptor</h3>
+    <div
+      v-if="successMessage"
+      class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+      role="alert"
+    >
+      <strong class="font-bold mr-2">Éxito!</strong>
+      <span class="block sm:inline">{{ successMessage }}</span>
+    </div>
     <div class="flex items-start gap-6 mb-4">
       <img
         src="https://avatar.iran.liara.run/public/boy"
