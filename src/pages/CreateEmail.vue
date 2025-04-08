@@ -6,6 +6,7 @@ import { weekDays, type WeekDay } from '@/types/Time'
 import { storage } from '@/services/firebase' // ajusta según tu ruta
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { EmailsRepository } from '@/repositories/EmailsRepository'
+import { weekDaysTranslations } from '@/helpers/localTranslations'
 
 const emailsRepository = new EmailsRepository()
 
@@ -13,7 +14,7 @@ const form = ref<Omit<NewEmail, 'createdAt'>>({
   title: '',
   subject: '',
   body: '',
-  filesIds: [],
+  filesUrls: [],
   mode: 'unique',
   days: null,
   sendingDay: null,
@@ -39,7 +40,7 @@ const sendingDayString = computed({
 
 // Sync helpers
 watch(filesInput, (val) => {
-  form.value.filesIds = val
+  form.value.filesUrls = val
     .split(',')
     .map((f) => f.trim())
     .filter(Boolean)
@@ -80,7 +81,7 @@ async function handleFilesUpload() {
     uploadedFileURLs.push(url)
   }
 
-  form.value.filesIds = uploadedFileURLs
+  form.value.filesUrls = uploadedFileURLs
 }
 
 async function handleSubmit() {
@@ -107,7 +108,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <h3 class="mt-5 ml-5 font-medium text-2xl">Crear Email Programado</h3>
+  <h2 class="mt-5 ml-5 font-medium text-2xl">Crear Email Programado</h2>
   <div
     v-if="errorMessage"
     class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
@@ -198,7 +199,7 @@ async function handleSubmit() {
               :value="day"
               :id="`days-${day}-input`"
             />
-            {{ day }}
+            {{ weekDaysTranslations[day] }}
           </label>
         </div>
       </div>
