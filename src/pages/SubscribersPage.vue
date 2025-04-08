@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import TableComponent from '@/components/TableComponent.vue'
+import SubscribersRepository from '@/repositories/SubscribersRepository'
 import router from '@/router'
+import type { Subscriber } from '@/types/Subscriber'
 import type { Column, DataItem } from '@/types/Table'
-import suscribers from '@/assets/suscribers.js'
+import { onMounted, ref } from 'vue'
 
 const columns: Column[] = [
   {
@@ -10,21 +12,30 @@ const columns: Column[] = [
     key: 'name',
   },
   {
-    label: 'Estado',
-    key: 'status',
+    label: 'Negocio',
+    key: 'businessName',
+  },
+  {
+    label: 'Correo electrónico',
+    key: 'email',
   },
   {
     label: 'Fecha de suscripción',
-    key: 'subscribedAt',
+    key: 'createdAt',
   },
 ]
 
-const data = suscribers
+const data = ref<Subscriber[]>([])
 
 function viewDetail(item: DataItem) {
   const itemId = item.id ?? null
   if (itemId && typeof itemId === 'string') router.push(`/suscriptores/${itemId}`)
 }
+
+onMounted(async () => {
+  const subscribers = await SubscribersRepository.get()
+  if (subscribers) data.value = subscribers
+})
 </script>
 
 <template>

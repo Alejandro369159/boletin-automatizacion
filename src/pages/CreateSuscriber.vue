@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import suscribers from '@/assets/suscribers.js'
-import type { DataItem } from '@/types/Table'
+import type { NewSubscriber } from '@/types/Subscriber'
+import SubscribersRepository from '@/repositories/SubscribersRepository'
 
 const router = useRouter()
 
-const newSubscriber = ref<{ name: string; email: string; businessName: string; role: string }>({
+const newSubscriber = ref<NewSubscriber>({
   name: '',
   email: '',
   businessName: '',
-  role: '',
 })
 
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
-const addSubscriber = () => {
+const addSubscriber = async () => {
   errorMessage.value = null
   successMessage.value = null
 
@@ -35,35 +34,7 @@ const addSubscriber = () => {
     return
   }
 
-  if (!newSubscriber.value.role.trim()) {
-    errorMessage.value = 'El rol es obligatorio.'
-    return
-  }
-
-  // Find the next available ID (simplistic approach, might need adjustment)
-  let nextId = 1
-  if (suscribers.length > 0) {
-    const lastSubscriber = suscribers[suscribers.length - 1]
-    nextId = parseInt(lastSubscriber.id as string, 10) + 1
-    if (isNaN(nextId)) {
-      // Fallback if IDs are not simple numbers
-      nextId = suscribers.length + 1
-    }
-  }
-
-  const subscriberToAdd: DataItem = {
-    id: String(nextId),
-    name: newSubscriber.value.name,
-    email: newSubscriber.value.email,
-    businessName: newSubscriber.value.businessName,
-    role: newSubscriber.value.role,
-    // Manteniendo campos existentes si son necesarios para TableComponent
-    status: 'activo',
-    subscribedAt: new Date().toLocaleDateString(),
-  }
-
-  suscribers.push(subscriberToAdd)
-  console.log('Nuevo suscriptor añadido:', subscriberToAdd)
+  await SubscribersRepository.create(newSubscriber.value)
 
   successMessage.value = `Usuario "${newSubscriber.value.name}" añadido correctamente.`
 
@@ -71,12 +42,7 @@ const addSubscriber = () => {
     name: '',
     email: '',
     businessName: '',
-    role: '',
   }
-
-  setTimeout(() => {
-    router.push('/suscriptores')
-  }, 1500)
 }
 </script>
 
@@ -89,7 +55,7 @@ const addSubscriber = () => {
       class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
       role="alert"
     >
-      <strong class="font-bold">Error!</strong>
+      <strong class="font-bold mr-2">Error!</strong>
       <span class="block sm:inline">{{ errorMessage }}</span>
     </div>
 
@@ -98,11 +64,11 @@ const addSubscriber = () => {
       class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
       role="alert"
     >
-      <strong class="font-bold">Éxito!</strong>
+      <strong class="font-bold mr-2">Éxito!</strong>
       <span class="block sm:inline">{{ successMessage }}</span>
     </div>
 
-    <form @submit.prevent="addSubscriber" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form @submit.prevent="addSubscriber" class="flex flex-col max-w-lg gap-4">
       <div>
         <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
         <input
@@ -137,16 +103,6 @@ const addSubscriber = () => {
         />
       </div>
 
-      <div>
-        <label for="role" class="block text-gray-700 text-sm font-bold mb-2">Rol:</label>
-        <input
-          type="text"
-          id="role"
-          v-model="newSubscriber.role"
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        />
-      </div>
-
       <div class="md:col-span-2 flex justify-end gap-4 mt-4">
         <button
           type="submit"
@@ -159,7 +115,7 @@ const addSubscriber = () => {
           class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           @click="router.go(-1)"
         >
-          Cancelar
+          Volver
         </button>
       </div>
     </form>
