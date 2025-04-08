@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import router from '@/router'
+import { auth } from '@/services/firebase'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import { ref } from 'vue'
 
 const email = ref('')
 const password = ref('')
 
-function login() {
+async function login() {
   try {
+    await signInWithEmailAndPassword(auth, email.value, password.value)
     router.push('/correos')
-    // Login function
   } catch (e) {
     console.error(e)
   }

@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { auth } from '@/services/firebase'
 import { UsersIcon } from '@heroicons/vue/24/outline'
 import { HomeIcon } from '@heroicons/vue/24/outline'
-import type { FunctionalComponent } from 'vue'
+import { signOut, type User } from 'firebase/auth'
+import { ref, type FunctionalComponent } from 'vue'
+import { useRouter } from 'vue-router'
+
+const user = ref<User | null>(null)
+
+auth.onAuthStateChanged((currentUser) => {
+  user.value = currentUser
+
+  if (!currentUser) {
+    router.push('/login')
+  }
+})
 
 const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
   {
@@ -15,6 +28,17 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
     icon: UsersIcon,
   },
 ]
+
+const router = useRouter()
+
+async function logout() {
+  try {
+    await signOut(auth)
+    router.push('/login')
+  } catch (e) {
+    console.error(e)
+  }
+}
 </script>
 
 <template>
@@ -24,7 +48,7 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
         <div class="text-white font-semibold text-center pt-4 mb-8">
           <img src="@/assets/images/logo.png" alt="logo" class="h-9 invert mx-auto" />
           <hr class="border-2 mt-4" />
-          <p class="text-lg mt-3">Mario A. Martínez</p>
+          <p class="text-lg mt-3">{{ user?.email }}</p>
           <p>Boletín de Correos</p>
         </div>
 
@@ -40,7 +64,7 @@ const routes: { label: string; path: string; icon: FunctionalComponent }[] = [
       </div>
 
       <button
-        @click="$router.push('/login')"
+        @click="logout"
         type="button"
         class="bg-red-600 text-white px-6 py-2 block mx-auto mb-6 cursor-pointer hover:bg-red-700"
       >
