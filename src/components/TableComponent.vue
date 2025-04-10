@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Button, Column, DataItem } from '@/types/Table'
-import { defineProps, defineEmits, computed, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   columns: Column[]
