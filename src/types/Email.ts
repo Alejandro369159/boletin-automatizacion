@@ -11,10 +11,10 @@ export type Email = {
   filesUrls: string[]
   mode: 'daily' | 'some-days' | 'unique'
   days: WeekDay[] | null
-  sendingDay: Date | null
-  sendingHour: string
+  sendAtDate: Date | null
+  sendAtHour: Date
   addresseeMode: 'all' | 'some' | 'percent'
-  addresseeEmails: string[] | null
+  addresseeEmails: string[] | string | null
   addresseePercent: number | null
   createdAt: Date
 }
@@ -28,8 +28,8 @@ export function emailFromFirestore(doc: QueryDocumentSnapshot): Email {
     filesUrls: doc.data().filesUrls,
     mode: doc.data().mode,
     days: doc.data().days,
-    sendingDay: doc.data().sendingDay ? doc.data().sendingDay.toDate() : null,
-    sendingHour: doc.data().sendingHour,
+    sendAtDate: doc.data().sendAtDate ? doc.data().sendAtDate.toDate() : null,
+    sendAtHour: doc.data().sendAtHour ? doc.data().sendAtHour.toDate() : null,
     addresseeMode: doc.data().addresseeMode,
     addresseeEmails: doc.data().addresseeEmails,
     addresseePercent: doc.data().addresseePercent,

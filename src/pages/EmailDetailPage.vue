@@ -43,7 +43,7 @@ onMounted(async () => {
     class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
     role="alert"
   >
-    <strong class="font-bold">Error!</strong>
+    <strong class="font-bold">Error</strong>
     <span class="block sm:inline">{{ errorMessage }}</span>
   </div>
   <article v-else-if="email" class="px-5 mt-5">
@@ -68,13 +68,19 @@ onMounted(async () => {
     <div v-if="email.mode === 'unique'">
       <p><strong>Día programado para el envío: </strong></p>
       <p class="bg-gray-100 p-2 w-full max-w-sm border border-gray-300">
-        {{ email.sendingDay!.toLocaleString() }}
+        {{
+          email.sendAtDate?.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          })
+        }}
       </p>
     </div>
     <div>
       <p><strong>Hora programada para el envío: </strong></p>
       <p class="bg-gray-100 p-2 w-full max-w-sm border border-gray-300">
-        {{ email.sendingHour }}
+        {{ email.sendAtHour?.toTimeString().slice(0, 5) }}
       </p>
     </div>
     <div>

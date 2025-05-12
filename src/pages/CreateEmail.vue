@@ -3,22 +3,33 @@ import { ref, computed, watch } from 'vue'
 import type { NewEmail } from '@/types/Email'
 import router from '@/router'
 import { weekDays, type WeekDay } from '@/types/Time'
-import { storage } from '@/services/firebase' // ajusta según tu ruta
+import { storage } from '@/services/firebase'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { EmailsRepository } from '@/repositories/EmailsRepository'
 import { weekDaysTranslations } from '@/helpers/localTranslations'
 
 const emailsRepository = new EmailsRepository()
 
-const form = ref<Omit<NewEmail, 'createdAt'>>({
+function getDateFromHours(hours: number, minutes: number) {
+  const date = new Date(1970, 0, 1)
+  date.setHours(hours, minutes, 0, 0)
+  return date
+}
+
+const form = ref<
+  Omit<NewEmail, 'createdAt'> & {
+    sendAtHourString: string
+  }
+>({
   title: '',
   subject: '',
   body: '',
   filesUrls: [],
   mode: 'unique',
   days: null,
-  sendingDay: null,
-  sendingHour: '08:00',
+  sendAtDate: null,
+  sendAtHour: getDateFromHours(8, 0),
+  sendAtHourString: '08:00',
   addresseeMode: 'all',
   addresseeEmails: null,
   addresseePercent: null,
@@ -31,14 +42,13 @@ const isLoading = ref(false)
 
 const filesInput = ref('')
 const emailsInput = ref('')
-const sendingDayString = computed({
-  get: () => (form.value.sendingDay ? form.value.sendingDay.toISOString().split('T')[0] : ''),
+const sendAtDateString = computed({
+  get: () => (form.value.sendAtDate ? form.value.sendAtDate.toISOString().split('T')[0] : ''),
   set: (val) => {
-    form.value.sendingDay = val ? new Date(val) : null
+    form.value.sendAtDate = val ? new Date(val) : null
   },
 })
 
-// Sync helpers
 watch(filesInput, (val) => {
   form.value.filesUrls = val
     .split(',')
@@ -90,9 +100,18 @@ async function handleSubmit() {
     await handleFilesUpload()
     const newEmail: NewEmail = {
       ...form.value,
-      sendingDay: form.value.mode === 'unique' ? new Date(sendingDayString.value) : null,
+      sendAtDate: form.value.mode === 'unique' ? new Date(sendAtDateString.value) : null,
+      sendAtHour: getDateFromHours(
+        +form.value.sendAtHourString.split(':')[0],
+        +form.value.sendAtHourString.split(':')[1],
+      ),
       days: form.value.mode === 'unique' ? null : form.value.days,
-      addresseeEmails: form.value.addresseeMode !== 'some' ? null : form.value.addresseeEmails,
+      addresseeEmails:
+        form.value.addresseeMode !== 'some'
+          ? null
+          : typeof form.value.addresseeEmails === 'string'
+            ? form.value.addresseeEmails.split(',')
+            : form.value.addresseeEmails,
       addresseePercent: form.value.addresseeMode !== 'percent' ? null : form.value.addresseePercent,
       createdAt: new Date(),
     }
@@ -103,6 +122,16 @@ async function handleSubmit() {
     const error = e as Error
     errorMessage.value = error.message
     isLoading.value = false
+  }
+}
+
+// watch the hour is a o'clock
+function watchHour() {
+  console.log('watchHour', form.value.sendAtHourString)
+  const [hours, minutes] = form.value.sendAtHourString.split(':').map(Number)
+  if (minutes !== 0) {
+    form.value.sendAtHourString = `${hours}:00`.padStart(5, '0')
+    form.value.sendAtHour = getDateFromHours(hours, 0)
   }
 }
 </script>
@@ -206,10 +235,10 @@ async function handleSubmit() {
 
       <!-- Fecha de envío (solo si unique) -->
       <div v-if="form.mode === 'unique'">
-        <label class="block" for="sendingDay">Fecha de envío</label>
+        <label class="block" for="sendAtDate">Fecha de envío</label>
         <input
-          id="sendingDay"
-          v-model="sendingDayString"
+          id="sendAtDate"
+          v-model="sendAtDateString"
           type="date"
           class="px-3 py-1 bg-white rounded-sm border border-gray-700 w-full"
         />
@@ -217,14 +246,18 @@ async function handleSubmit() {
 
       <!-- Hora de envío -->
       <div>
-        <label class="block" for="sendingHour">Hora de envío (HH:mm)</label>
+        <label class="block" for="sendAtHourString">Hora de envío (HH:mm)</label>
         <input
-          id="sendingHour"
-          v-model="form.sendingHour"
+          id="sendAtHourString"
+          v-model="form.sendAtHourString"
           type="time"
           class="px-3 py-1 bg-white rounded-sm border border-gray-700 w-full"
           required
+          @input="watchHour"
         />
+        <div class="text-sm text-gray-500">
+          (La hora se redondeará a la hora más cercana, por ejemplo: 08:30 se convertirá a 08:00)
+        </div>
       </div>
 
       <!-- Destinatarios -->
@@ -238,7 +271,6 @@ async function handleSubmit() {
         >
           <option value="all">Todos</option>
           <option value="some">Algunos</option>
-          <option value="percent">Porcentaje</option>
         </select>
       </div>
 
