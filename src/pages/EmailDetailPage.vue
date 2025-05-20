@@ -23,7 +23,10 @@ onMounted(async () => {
   try {
     isLoading.value = true
     email.value = await emailsRepository.get(emailId)
-    console.table(email.value)
+    // add a day to sendAtDate
+    if (email.value?.sendAtDate) {
+      email.value.sendAtDate.setDate(email.value!.sendAtDate.getDate() + 1)
+    }
     isLoading.value = false
   } catch (e) {
     isLoading.value = false
@@ -69,7 +72,7 @@ onMounted(async () => {
       <p><strong>Día programado para el envío: </strong></p>
       <p class="bg-gray-100 p-2 w-full max-w-sm border border-gray-300">
         {{
-          email.sendAtDate?.toLocaleString('es-ES', {
+          email.sendAtDate?.toLocaleString('es-MX', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -130,7 +133,13 @@ onMounted(async () => {
     <div>
       <p><strong>Fecha de creación del correo programado: </strong></p>
       <p class="bg-gray-100 p-2 w-full max-w-sm border border-gray-300">
-        {{ email.createdAt.toLocaleString() }}
+        {{
+          email.createdAt.toLocaleString('es-MX', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          })
+        }}
       </p>
     </div>
   </article>

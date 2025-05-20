@@ -93,7 +93,7 @@ function shouldSendEmail(email: Email, lastSentAt: Date | null, now: Date): bool
 
   // Check if the current hour matches the target send hour
   if (sendHour !== nowHour) {
-    // logger.debug(`Skipping email ${email.documentId}: Hour mismatch (${nowHour} vs ${sendHour})`);
+    logger.debug(`Skipping email ${email.documentId}: Hour mismatch (${nowHour} vs ${sendHour})`)
     return false // Log only if needed, can be verbose
   }
 
@@ -103,7 +103,9 @@ function shouldSendEmail(email: Email, lastSentAt: Date | null, now: Date): bool
       const targetDate = email.sendAtDate.toDate()
       // Check if the date matches today AND it hasn't been sent before (lastSentAt check)
       const shouldSend = isSameDate(targetDate, now) && !lastSentAt
-      // logger.debug(`Email ${email.documentId} (unique): Date match=${isSameDate(targetDate, now)}, LastSent=${lastSentAt}, ShouldSend=${shouldSend}`);
+      logger.debug(
+        `Email ${email.documentId} (unique): Date match=${isSameDate(targetDate, now)}, LastSent=${lastSentAt}, ShouldSend=${shouldSend}`,
+      )
       return shouldSend
     }
     case 'some-days': {
@@ -264,8 +266,6 @@ async function getLastSentTimestamp(
 ): Promise<Date | null> {
   const registrySnap = await db
     .collection(`emails/${emailId}/registry`)
-    // Optional: Filter by status if you only care about last *successful* send
-    // .where('status', '==', 'success')
     .orderBy('sentAt', 'desc')
     .limit(1)
     .get()
@@ -318,7 +318,7 @@ export const scheduledSendEmail = onSchedule('0 * * * *', async (event) => {
 
         // b. Check if email should be sent now
         if (!shouldSendEmail(email, lastSentAt, now)) {
-          // logger.debug(`Skipping email ${email.documentId} based on schedule or last sent time.`);
+          logger.debug(`Skipping email ${email.documentId} based on schedule or last sent time.`)
           emailsSkippedCount++
           continue // Skip to the next email
         }
